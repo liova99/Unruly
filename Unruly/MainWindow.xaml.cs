@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Drawing;
 
 namespace Unruly
 {
@@ -20,9 +21,27 @@ namespace Unruly
     /// </summary>
     public partial class MainWindow : Window
     {
+        CreateGame createGame = new CreateGame();
         public MainWindow()
         {
+
+
             InitializeComponent();
+            //CreateGame createGame = new CreateGame();
+            //createGame.CreateRectangle();
+            myGrid.Background = new SolidColorBrush(Colors.LightBlue);
+
+            createGame.CreateRectangle(myGrid, 0, 0, true, Click);
+            createGame.CreateRectangle(myGrid, 0, 1, null, Click);
+
         }
+
+        public void Click(object sender, MouseButtonEventArgs args)
+        {
+            MessageBox.Show($"Clicked Rect {i},{j}");
+
+        }
+
+
     }
 }
