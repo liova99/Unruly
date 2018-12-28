@@ -26,9 +26,10 @@ myRect.MouseLeftButtonUp += (sender, args) =>
 https://www.tutorialspoint.com/csharp/csharp_multi_dimensional_arrays.htm
 
 
-### Read File
 
-```C#
+### read File
+
+```c#
 try
             {
                 string[] lines = File.ReadAllLines(@"Resources\Puzzle\small_1.txt");
@@ -58,8 +59,6 @@ try
 
             }
 ```
-
-
 
 
 

@@ -18,27 +18,13 @@ namespace Unruly
 
         private Nullable<Boolean> _color = null;
 
-        private Nullable<Boolean>[,] _myArray = new Nullable<Boolean>[6, 6];
+        private Nullable<Boolean>[,] _myArray = null;
 
-        //{null, null, null, null, true, null },
-        //{null, null, true, null, false,  false },
-        //{false, false, null, null, null, null },
-        //{false, null, null, true, null, null },
-        //{null, null, null, null, null, true },
-        //{null, null, null, null,  null, false },
+        int maxRows, maxColumns;
 
-        //};
 
-        private Nullable<Boolean>[,] _solution = new Nullable<Boolean>[6, 6] {
 
-               {false, true, false, false, true, true},
-               {true, false, true, true,  false,  false },
-               {false, false, true, false, true, true },
-               {false, true, false, true, true, false },
-               {true, false, true, false, false, true },
-               {true, true, false, true,  false, false },
-
-            };
+        private Nullable<Boolean>[,] _solution = new Nullable<Boolean>[6, 6];
 
         private bool _isAButton = false;
 
@@ -53,6 +39,7 @@ namespace Unruly
 
             Rectangle myRect = new System.Windows.Shapes.Rectangle();
             Button checkBtn = new Button();
+            Button showSolutionBtn = new Button();
 
 
             myRect.Stroke = System.Windows.Media.Brushes.Black;
@@ -100,8 +87,6 @@ namespace Unruly
 
             checkBtn.Click += (sender, args) =>
             {
-
-
                 _correctly = true;
 
                 for (int i = 0; i < 6; i++)
@@ -135,6 +120,18 @@ namespace Unruly
 
             };
 
+            showSolutionBtn.Click += (sender, args) =>
+            {
+
+
+                bool result = Solve();
+
+                MessageBox.Show(result.ToString());
+
+
+
+            };
+
 
 
 
@@ -158,12 +155,21 @@ namespace Unruly
             checkBtn.Width = 200;
             checkBtn.Height = 200;
 
+            showSolutionBtn.Content = "Can't do it?!!";
+            showSolutionBtn.Width = 200;
+            showSolutionBtn.Height = 200;
+
             if (_isAButton == false)
             {
                 myCanvas.Children.Add(checkBtn);
+                myCanvas.Children.Add(showSolutionBtn);
 
                 Canvas.SetRight(checkBtn, y * _myRectangleSize);
                 Canvas.SetBottom(checkBtn, y * _myRectangleSize);
+
+                Canvas.SetRight(showSolutionBtn, y * _myRectangleSize);
+                Canvas.SetTop(showSolutionBtn, y * _myRectangleSize);
+
                 _isAButton = true;
             }
 
@@ -191,54 +197,275 @@ namespace Unruly
 
         }
 
-
-        public void OpenFile()
+        public void InitFile()
         {
-           
-            try
+            Random random = new Random();
+            int randomNumber = random.Next(1, 3);
+            _myArray = OpenFile($@"Resources\Puzzle\small_{randomNumber}.txt");
+        }
+
+        public class AssignmentResult
+        {
+            public int i, j;
+        }
+
+
+
+        /// <summary>
+        /// returns null if there is no assignment possible
+        /// </summary>
+        /// <returns></returns>
+        public AssignmentResult GetNextAssignment()
+        {
+            for (int i = 0; i < maxRows; i++)
             {
-                using (StreamReader sr = new StreamReader("Resources\\Puzzle\\small_1.txt"))
+                for (int j = 0; j < maxColumns; j++)
                 {
-
-                    String line = sr.ReadToEnd();
-                    line = line.Replace("\r", string.Empty).Replace("\n", string.Empty);
-                    Console.WriteLine("fkajshfdkajshfdlkasjhfd " + line[10]);
-                    Console.WriteLine($"Line length {line.Length}");
-                    Console.WriteLine($"Solution Length {_solution.Length}");
-
-                    int iterator = 0;
-
-                    for (int i = 0; i < _solution.Length; i++)
+                    if (_myArray[i, j] == null)
                     {
-                        for (int j = 0; j < _solution.Length; j++)
-                        {
+                        return new AssignmentResult() { i = i, j = j };
+                    }
+                }
+            }
 
+            return null;
+        }
 
-                            if (line[iterator].ToString() == "F")
-                            {
-                                _myArray[i, j] = false;
-                            }
-                            else if (line[iterator].ToString() == "T")
-                            {
-                                _myArray[i, j] = true;
-                            }
-                            else
-                            {
-                                _myArray[i, j] = null;
-                            }
-                            iterator++;
-                        }
+        public bool RowNumberCheck()
+        {
+          
 
-                        Console.WriteLine($"iterator: {iterator}");
+            for (int i = 0; i < maxRows; i++)
+            {
+                int trueIte = 0;
+                int falseIte = 0;
+                int iterator = 0;
+
+                for (int j = 0; j < maxColumns; j++)
+                {
+                    if (trueIte > 3 || falseIte > 3)
+                    {
+                        return false;
+                    }
+
+                    if (_myArray[i, j] == true)
+                    {
+                        trueIte++;
+                    }
+
+                    else if (_myArray[i, j] == false)
+                    {
+                        falseIte++;
                     }
 
 
+                    // next row
+                    if (iterator == 5)
+                    {
+                        iterator = 0;
+                        falseIte = 0;
+                        iterator = 0;
+                    }
+                    else
+                    {
+                        iterator++;
+                    }
                 }
             }
-            catch
+            return true;
+        }
+
+        public bool ColumnNumberCheck()
+        {
+           
+
+            for (int i = 0; i < maxRows; i++)
             {
-                Console.WriteLine("nothik to say.. ");
+                int trueIte = 0;
+                int falseIte = 0;
+                int iterator = 0;
+                for (int j = 0; j < maxColumns; j++)
+                {
+                    if (trueIte > 3 || falseIte > 3)
+                    {
+                        return false;
+                    }
+
+                    if (_myArray[i, j] == true)
+                    {
+                        trueIte++;
+                    }
+
+                    else if (_myArray[j, i] == false)
+                    {
+                        falseIte++;
+                    }
+
+
+                    // next row
+                    if (iterator == 5)
+                    {
+                        iterator = 0;
+                        falseIte = 0;
+                        iterator = 0;
+                    }
+                    else
+                    {
+                        iterator++;
+                    }
+                }
             }
+            return true;
+
+        }
+
+        public bool Max2RowCheck()
+        {
+            
+            //only 2 fields which are consecutive can have the same color
+            for (int i = 0; i < maxRows; i++)
+            {
+                Nullable<bool> lastColor = null;
+                bool actualColor = (bool)_myArray[0, 0];
+                for (int j = 0; j < maxColumns; j++)
+                {
+
+                    actualColor = (bool)_myArray[i, j];
+                    if (lastColor == actualColor)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        lastColor = actualColor;
+                    }
+                }
+            }
+            return true;
+        }
+
+        public bool Max2ColumnCheck()
+        {
+            
+            //only 2 fields which are consecutive can have the same color
+            for (int i = 0; i < maxRows; i++)
+            {
+                bool lastColor = (bool)_myArray[0, 0];
+                bool actualColor = (bool)_myArray[0, 0];
+                for (int j = 0; j < maxColumns; j++)
+                {
+
+                    actualColor = (bool)_myArray[j, i];
+                    if (lastColor == actualColor)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        lastColor = actualColor;
+                    }
+                }
+            }
+            return true;
+        }
+
+
+
+        public bool ContainsRuleViolation()
+        {
+            return RowNumberCheck() && ColumnNumberCheck() && Max2RowCheck() && Max2ColumnCheck();
+        }
+
+        public bool Solve()
+        {
+            //optimization: some rule violations can be detected before everything is complete
+
+
+            //choose variable to assign
+            AssignmentResult assignmentResult = GetNextAssignment();
+
+            if (assignmentResult == null)
+            {
+                return ContainsRuleViolation();
+            }
+
+            bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+
+            _myArray[assignmentResult.i, assignmentResult.j] = true;
+
+            //assign with white
+
+            if (!Solve())
+            {
+                //unassign value
+                //assign black
+
+                _myArray[assignmentResult.i, assignmentResult.j] = false;
+
+                if (!Solve())
+                {
+                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+
+        public Nullable<Boolean>[,] OpenFile(string path)
+        {
+            Random random = new Random();
+            int randomNumber = random.Next(1, 3);
+            Console.WriteLine("random " + randomNumber);
+            String[] puzzle = new String[]
+            {
+                "small_1.txt","small_2.txt",
+            };
+
+            //$@"Resources\Puzzle\small_{randomNumber}.txt"
+            string[] puzzleLines = File.ReadAllLines(path);
+
+            string[] puzzleFirstLineSplitted = puzzleLines[0].Split(' ');
+
+
+            maxRows = int.Parse(puzzleFirstLineSplitted[0]);
+            maxColumns  = int.Parse(puzzleFirstLineSplitted[1]);
+
+            Nullable<Boolean>[,] resultArray = new Nullable<Boolean>[maxRows, maxColumns];
+
+
+            for (int i = 0; i < maxRows; i++)
+            {
+                for (int j = 0; j < maxColumns; j++)
+                {
+                    char currentPuzzleChar = puzzleLines[i + 1][j];
+
+                    if (currentPuzzleChar == 'T')
+                    {
+                        resultArray[i, j] = true;
+                    }
+                    else if (currentPuzzleChar == 'F')
+                    {
+                        resultArray[i, j] = false;
+                    }
+                    else
+                    {
+                        resultArray[i, j] = null;
+                    }
+
+                }
+            }
+            return resultArray;
+
+
+
 
         }
 
