@@ -28,9 +28,11 @@ namespace Unruly
 
 
             InitializeComponent();
+            createGame.OpenFile();
             myCanvas.Background = new SolidColorBrush(Colors.LightBlue);
 
             createGame.CreateGrid(6, myCanvas);
+            
 
         }
 

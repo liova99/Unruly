@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,16 +18,16 @@ namespace Unruly
 
         private Nullable<Boolean> _color = null;
 
-        private Nullable<Boolean>[,] _myArray = new Nullable<Boolean>[6, 6] {
+        private Nullable<Boolean>[,] _myArray = new Nullable<Boolean>[6, 6];
 
-               {null, null, null, null, true, null },
-               {null, null, true, null, false,  false },
-               {false, false, null, null, null, null },
-               {false, null, null, true, null, null },
-               {null, null, null, null, null, true },
-               {null, null, null, null,  null, false },
+        //{null, null, null, null, true, null },
+        //{null, null, true, null, false,  false },
+        //{false, false, null, null, null, null },
+        //{false, null, null, true, null, null },
+        //{null, null, null, null, null, true },
+        //{null, null, null, null,  null, false },
 
-            };
+        //};
 
         private Nullable<Boolean>[,] _solution = new Nullable<Boolean>[6, 6] {
 
@@ -95,7 +96,7 @@ namespace Unruly
 
             };
 
-           
+
 
             checkBtn.Click += (sender, args) =>
             {
@@ -107,16 +108,16 @@ namespace Unruly
                 {
                     for (int j = 0; j < 6; j++)
                     {
-                        if(_myArray[i,j] != _solution[i,j])
+                        if (_myArray[i, j] != _solution[i, j])
                         {
                             _correctly = false;
-                            
+
                             break;
                         }
-                        
+
                     }
 
-                    if(!_correctly)
+                    if (!_correctly)
                     {
                         break;
                     }
@@ -191,8 +192,53 @@ namespace Unruly
         }
 
 
-        public void ChangeColor(Rectangle r)
+        public void OpenFile()
         {
+           
+            try
+            {
+                using (StreamReader sr = new StreamReader("Resources\\Puzzle\\small_1.txt"))
+                {
+
+                    String line = sr.ReadToEnd();
+                    line = line.Replace("\r", string.Empty).Replace("\n", string.Empty);
+                    Console.WriteLine("fkajshfdkajshfdlkasjhfd " + line[10]);
+                    Console.WriteLine($"Line length {line.Length}");
+                    Console.WriteLine($"Solution Length {_solution.Length}");
+
+                    int iterator = 0;
+
+                    for (int i = 0; i < _solution.Length; i++)
+                    {
+                        for (int j = 0; j < _solution.Length; j++)
+                        {
+
+
+                            if (line[iterator].ToString() == "F")
+                            {
+                                _myArray[i, j] = false;
+                            }
+                            else if (line[iterator].ToString() == "T")
+                            {
+                                _myArray[i, j] = true;
+                            }
+                            else
+                            {
+                                _myArray[i, j] = null;
+                            }
+                            iterator++;
+                        }
+
+                        Console.WriteLine($"iterator: {iterator}");
+                    }
+
+
+                }
+            }
+            catch
+            {
+                Console.WriteLine("nothik to say.. ");
+            }
 
         }
 
