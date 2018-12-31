@@ -30,6 +30,14 @@ namespace Unruly
 
         private bool _correctly = true;
 
+        private bool isNull= true;
+
+        private Brush _black = System.Windows.Media.Brushes.Black;
+        private Brush _white = System.Windows.Media.Brushes.White;
+        private Brush _gray = System.Windows.Media.Brushes.Gray;
+
+        private bool result = false;
+
 
         public void CreateRectangle(Canvas myCanvas, String rectName, int x, int y, Nullable<Boolean> color)
         {
@@ -65,19 +73,19 @@ namespace Unruly
                 if (color == null)
                 {
                     _myArray[x, y] = false;
-                    myRect.Fill = System.Windows.Media.Brushes.Black;
+                    myRect.Fill = _black;
 
                 }
                 else if (color == true)
                 {
                     _myArray[x, y] = null;
-                    myRect.Fill = System.Windows.Media.Brushes.Gray;
+                    myRect.Fill = _gray;
 
                 }
                 else if (color == false)
                 {
                     _myArray[x, y] = true;
-                    myRect.Fill = System.Windows.Media.Brushes.White;
+                    myRect.Fill = _white;
 
                 }
 
@@ -120,15 +128,20 @@ namespace Unruly
 
             };
 
-            showSolutionBtn.Click += (sender, args) =>
+            showSolutionBtn.Click += (sender, e) =>
             {
 
 
-                bool result = Solve();
+               
+                result = Solve();
 
-                MessageBox.Show(result.ToString());
+                if (result)
+                {
+                    CreateGrid(maxColumns, myCanvas);
+                    MessageBox.Show(result.ToString());
 
-
+                }
+                Console.WriteLine($"Result {result.ToString()}");
 
             };
 
@@ -137,17 +150,17 @@ namespace Unruly
 
             if (_color == null)
             {
-                myRect.Fill = System.Windows.Media.Brushes.Gray;
+                myRect.Fill = _gray;
 
             }
             else if (_color == true)
             {
-                myRect.Fill = System.Windows.Media.Brushes.White;
+                myRect.Fill = _white;
 
             }
             else if (_color == false)
             {
-                myRect.Fill = System.Windows.Media.Brushes.Black;
+                myRect.Fill = _black;
 
             }
 
@@ -180,8 +193,9 @@ namespace Unruly
             Canvas.SetLeft(myRect, y * _myRectangleSize);
 
 
-
         }
+
+
 
         public void CreateGrid(int gridSize, Canvas myCanvas)
         {
@@ -223,17 +237,21 @@ namespace Unruly
                 {
                     if (_myArray[i, j] == null)
                     {
+                        
                         return new AssignmentResult() { i = i, j = j };
                     }
+                    
                 }
             }
 
             return null;
         }
 
+        
+
         public bool RowNumberCheck()
         {
-          
+
 
             for (int i = 0; i < maxRows; i++)
             {
@@ -247,6 +265,7 @@ namespace Unruly
                     {
                         return false;
                     }
+                   
 
                     if (_myArray[i, j] == true)
                     {
@@ -257,7 +276,6 @@ namespace Unruly
                     {
                         falseIte++;
                     }
-
 
                     // next row
                     if (iterator == 5)
@@ -277,7 +295,7 @@ namespace Unruly
 
         public bool ColumnNumberCheck()
         {
-           
+
 
             for (int i = 0; i < maxRows; i++)
             {
@@ -290,6 +308,7 @@ namespace Unruly
                     {
                         return false;
                     }
+                    
 
                     if (_myArray[i, j] == true)
                     {
@@ -298,8 +317,10 @@ namespace Unruly
 
                     else if (_myArray[j, i] == false)
                     {
+                        
                         falseIte++;
                     }
+                   
 
 
                     // next row
@@ -321,23 +342,46 @@ namespace Unruly
 
         public bool Max2RowCheck()
         {
-            
+
             //only 2 fields which are consecutive can have the same color
             for (int i = 0; i < maxRows; i++)
             {
                 Nullable<bool> lastColor = null;
                 bool actualColor = (bool)_myArray[0, 0];
+                bool lastAndActual = false;
+                int black = 0;
+                int white = 0;
+                int iterator = 0;
                 for (int j = 0; j < maxColumns; j++)
                 {
 
                     actualColor = (bool)_myArray[i, j];
-                    if (lastColor == actualColor)
+
+                    if ((black > 2 && actualColor == false) || (white > 2 && actualColor == true))
                     {
+                        
                         return false;
+                    }
+                   
+                    if (actualColor == true)
+                    {
+                        white++;
+                    }
+                    else if (actualColor == false)
+                    {
+                        black++;
                     }
                     else
                     {
-                        lastColor = actualColor;
+                        return false;
+                    }
+
+                    iterator++;
+                    if (iterator == 6)
+                    {
+                        iterator = 0;
+                        black = 0;
+                        white = 0;
                     }
                 }
             }
@@ -346,29 +390,53 @@ namespace Unruly
 
         public bool Max2ColumnCheck()
         {
-            
+
             //only 2 fields which are consecutive can have the same color
+
             for (int i = 0; i < maxRows; i++)
             {
-                bool lastColor = (bool)_myArray[0, 0];
+                
                 bool actualColor = (bool)_myArray[0, 0];
+                int black = 0;
+                int white = 0;
+                int iterator = 0;
                 for (int j = 0; j < maxColumns; j++)
                 {
 
                     actualColor = (bool)_myArray[j, i];
-                    if (lastColor == actualColor)
+
+
+                    if ((black > 2 && actualColor == false) || (white > 2 && actualColor == true))
                     {
                         return false;
                     }
+                 
+
+                    if (actualColor == true)
+                    {
+                        white++;
+                    }
+                    else if (actualColor == false)
+                    {
+                        black++;
+                    }
                     else
                     {
-                        lastColor = actualColor;
+                        
+                        return false;
+                    }
+
+                    iterator++;
+                    if (iterator == 6)
+                    {
+                        iterator = 0;
+                        black = 0;
+                        white = 0;
                     }
                 }
             }
             return true;
         }
-
 
 
         public bool ContainsRuleViolation()
@@ -386,12 +454,14 @@ namespace Unruly
 
             if (assignmentResult == null)
             {
+                //Console.WriteLine($"Rulle Violation {ContainsRuleViolation().ToString()}");
                 return ContainsRuleViolation();
             }
 
             bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
 
             _myArray[assignmentResult.i, assignmentResult.j] = true;
+            
 
             //assign with white
 
@@ -401,10 +471,12 @@ namespace Unruly
                 //assign black
 
                 _myArray[assignmentResult.i, assignmentResult.j] = false;
+                //myRect.Fill = System.Windows.Media.Brushes.Black;
 
                 if (!Solve())
                 {
                     _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    
                     return false;
                 }
                 else
@@ -416,6 +488,8 @@ namespace Unruly
             {
                 return true;
             }
+
+           
         }
 
 
@@ -436,7 +510,8 @@ namespace Unruly
 
 
             maxRows = int.Parse(puzzleFirstLineSplitted[0]);
-            maxColumns  = int.Parse(puzzleFirstLineSplitted[1]);
+            maxColumns = int.Parse(puzzleFirstLineSplitted[1]);
+            Console.WriteLine($"MAx Rows and Colums {maxRows}, {maxColumns}");
 
             Nullable<Boolean>[,] resultArray = new Nullable<Boolean>[maxRows, maxColumns];
 
