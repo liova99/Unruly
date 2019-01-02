@@ -38,6 +38,9 @@ namespace Unruly
 
         private bool result = false;
 
+        private AssignmentResult assignmentResult;
+
+        public bool? valueBefore;
 
         public void CreateRectangle(Canvas myCanvas, String rectName, int x, int y, Nullable<Boolean> color)
         {
@@ -237,13 +240,13 @@ namespace Unruly
                 {
                     if (_myArray[i, j] == null)
                     {
-                        
+                        Console.WriteLine($"GetNextAssignment() = {i}, {j}");
                         return new AssignmentResult() { i = i, j = j };
                     }
                     
                 }
             }
-
+            Console.WriteLine("GetNextAssignment = null");
             return null;
         }
 
@@ -263,6 +266,8 @@ namespace Unruly
                 {
                     if (trueIte > 3 || falseIte > 3)
                     {
+                        Console.WriteLine("RowNumberCheck = FASLE");
+                        assignmentResult = new AssignmentResult() { i = i, j = j };
                         return false;
                     }
                    
@@ -306,6 +311,8 @@ namespace Unruly
                 {
                     if (trueIte > 3 || falseIte > 3)
                     {
+                        Console.WriteLine("ColumnNumberCheck() = FALSE");
+                        assignmentResult = new AssignmentResult() { i = i, j = j };
                         return false;
                     }
                     
@@ -359,7 +366,26 @@ namespace Unruly
 
                     if ((black > 2 && actualColor == false) || (white > 2 && actualColor == true))
                     {
+                        Console.WriteLine("Max2RowCheck() = FALSE");
+                        assignmentResult = new AssignmentResult() { i = i, j = j};
+                        for (int y = 0; y < maxRows; y++)
+                        {
+                            if (_myArray[i, y] == true)
+                            {
+                                _myArray[i, y] = false;
+                               
+                                Max2RowCheck();
+                            }
+                            else
+                            {
+                                _myArray[i, y] = true;
+                                
+                                Max2RowCheck();
+                            }
+                        }
                         
+                        
+
                         return false;
                     }
                    
@@ -373,6 +399,8 @@ namespace Unruly
                     }
                     else
                     {
+                        Console.WriteLine("Max2RowCheck() = FALSE");
+                        assignmentResult = new AssignmentResult() { i = i, j = j };
                         return false;
                     }
 
@@ -408,6 +436,9 @@ namespace Unruly
 
                     if ((black > 2 && actualColor == false) || (white > 2 && actualColor == true))
                     {
+                        Console.WriteLine("Max2ColumnCheck() = FALSE");
+                        //if( (i==1 || i== && i !=0)
+                        assignmentResult = new AssignmentResult() { i = i, j = j };
                         return false;
                     }
                  
@@ -422,8 +453,10 @@ namespace Unruly
                     }
                     else
                     {
-                        
+                        Console.WriteLine("Max2ColumnCheck() = FALSE");
+                        assignmentResult = new AssignmentResult() { i = i, j = j };
                         return false;
+                       
                     }
 
                     iterator++;
@@ -450,17 +483,69 @@ namespace Unruly
 
 
             //choose variable to assign
-            AssignmentResult assignmentResult = GetNextAssignment();
+             assignmentResult = GetNextAssignment();
 
             if (assignmentResult == null)
             {
                 //Console.WriteLine($"Rulle Violation {ContainsRuleViolation().ToString()}");
-                return ContainsRuleViolation();
+
+                if (ContainsRuleViolation())
+                {
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("Trying to solve...");
+                }
             }
 
-            bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+            try
+            {
+                //if (_myArray[assignmentResult.i, assignmentResult.j] != null )
+                //{
+                //    _myArray[assignmentResult.i, assignmentResult.j] = null;
+                //    bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+                //}
+                //else
+                //{
+                //    _myArray[assignmentResult.i, assignmentResult.j] = true;
+                //    bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+                //}
+                // = _myArray[assignmentResult.i, assignmentResult.j];
 
-            _myArray[assignmentResult.i, assignmentResult.j] = true;
+                valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+
+                int actual_i = assignmentResult.i;
+                int actual_j = assignmentResult.j;
+
+                if (_myArray[assignmentResult.i, assignmentResult.j] == true)
+                {
+                     valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+                    _myArray[assignmentResult.i, assignmentResult.j] = false;
+                    
+                }
+                else if(_myArray[actual_i, actual_j] == false && valueBefore !=true)
+                {
+                    _myArray[assignmentResult.i, assignmentResult.j] = true;
+                }
+                else if(_myArray[assignmentResult.i, assignmentResult.j] == null)
+                {
+                    _myArray[assignmentResult.i, assignmentResult.j] = true;
+                    
+                }
+                else
+                {
+                    Console.WriteLine("Else... trying to solve");
+                }
+
+                
+            }
+            catch
+            {
+                Console.WriteLine("bool valueBefore = null! ");
+            }
+
+            
             
 
             //assign with white
@@ -475,8 +560,9 @@ namespace Unruly
 
                 if (!Solve())
                 {
-                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-                    
+                    // _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    _myArray[assignmentResult.i, assignmentResult.j] = null;
+
                     return false;
                 }
                 else
