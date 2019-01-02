@@ -92,7 +92,7 @@ namespace Unruly
             {
 
                 _myArray = _initalArray.Clone() as Nullable<Boolean>[,];
- 
+
                 if (Solve())
                 {
                     CreateGrid(maxColumns, myCanvas);
@@ -149,7 +149,7 @@ namespace Unruly
             Canvas.SetLeft(myRect, y * _myRectangleSize);
 
         }
-        
+
         public void CreateGrid(int gridSize, Canvas myCanvas)
         {
             for (int i = 0; i < gridSize; i++)
@@ -162,12 +162,19 @@ namespace Unruly
             }
         }
 
-        public void InitFile()
+        public void InitFile(string size)
         {
             Random random = new Random();
             int randomNumber = random.Next(1, 3);
-            _myArray = OpenFile($@"Resources\Puzzle\small_{randomNumber}.txt");
-            _initalArray = OpenFile($@"Resources\Puzzle\small_{randomNumber}.txt");
+
+            //int randomNumber = 3;
+
+            //_myArray = OpenFile($@"Resources\Puzzle\small_{randomNumber}.txt");
+            //_initalArray = OpenFile($@"Resources\Puzzle\small_{randomNumber}.txt");
+
+            _myArray = OpenFile($@"Resources\Puzzle\{size}_{randomNumber}.txt");
+            _initalArray = OpenFile($@"Resources\Puzzle\{size}_{randomNumber}.txt");
+
         }
 
         public class AssignmentResult
@@ -203,90 +210,59 @@ namespace Unruly
         #region Check if rule violation
 
         // TODO: Check the loops, make them more efficient
+
         public bool RowNumberCheck()
         {
-            for (int i = 0; i < maxRows; i++)
+            for (int j = 0; j < maxColumns; j++)
             {
-                int trueIte = 0;
-                int falseIte = 0;
-                int iterator = 0;
+                int white = 0;
+                int black = 0;
 
-                for (int j = 0; j < maxColumns; j++)
+                for (int i = 0; i < maxRows; i++)
                 {
-                    if (trueIte > 3 || falseIte > 3)
+                    if (_myArray[i, j] == true)
                     {
+                        white++;
+                    }
+                    else if (_myArray[i, j] == false)
+                    {
+                        black++;
+                    }
 
+                    if (white > maxRows / 2 || black > maxRows / 2)
+                    {
                         return false;
                     }
 
-
-                    if (_myArray[i, j] == true)
-                    {
-                        trueIte++;
-                    }
-
-                    else if (_myArray[i, j] == false)
-                    {
-                        falseIte++;
-                    }
-
-                    // next row
-                    if (iterator == 5)
-                    {
-                        iterator = 0;
-                        falseIte = 0;
-                        iterator = 0;
-                    }
-                    else
-                    {
-                        iterator++;
-                    }
                 }
             }
             return true;
         }
 
-        
+
 
         public bool ColumnNumberCheck()
         {
 
             for (int i = 0; i < maxRows; i++)
             {
-                int trueIte = 0;
-                int falseIte = 0;
-                int iterator = 0;
+                int white = 0;
+                int black = 0;
+
                 for (int j = 0; j < maxColumns; j++)
                 {
-                    if (trueIte > 3 || falseIte > 3)
-                    {
-                        return false;
-                    }
-
-
                     if (_myArray[i, j] == true)
                     {
-                        trueIte++;
+                        white++;
+                    }
+                    else if (_myArray[i, j] == false)
+                    {
+                        black++;
                     }
 
-                    else if (_myArray[j, i] == false)
+                    if (white > maxRows / 2 || black > maxRows / 2)
                     {
-
-                        falseIte++;
-                    }
-
-
-
-                    // next row
-                    if (iterator == 5)
-                    {
-                        iterator = 0;
-                        falseIte = 0;
-                        iterator = 0;
-                    }
-                    else
-                    {
-                        iterator++;
+                        return false;
                     }
                 }
             }
@@ -298,47 +274,29 @@ namespace Unruly
         /// //only 2 fields which are consecutive can have the same color
         /// </summary>
         /// <returns></returns>
-        public bool Max2RowCheck()
+        public bool Max2ColumnCheck()
         {
             for (int i = 0; i < maxRows; i++)
             {
-                Nullable<bool> lastColor = null;
-                bool actualColor = (bool)_myArray[0, 0];
-                bool lastAndActual = false;
-                int black = 0;
-                int white = 0;
-                int iterator = 0;
-                for (int j = 0; j < maxColumns; j++)
+                //bool? lastColor =  (bool)_myArray[0, 0];
+
+                for (int j = 1; j < maxColumns - 1; j++)
                 {
 
-                    actualColor = (bool)_myArray[i, j];
+                    //if ((black > 1 && actualColor == false && lastColor == false) || (white > 2 && actualColor == true && lastColor == true))
+                    //{
 
-                    if ((black > 2 && actualColor == false) || (white > 2 && actualColor == true))
-                    {
+                    //    return false;
+                    //}
 
-                        return false;
-                    }
-
-                    if (actualColor == true)
-                    {
-                        white++;
-                    }
-                    else if (actualColor == false)
-                    {
-                        black++;
-                    }
-                    else
+                    //if (j < maxRows && j > 0)
+                    //{
+                    if (_myArray[i, j - 1] == _myArray[i, j + 1] && _myArray[i, j - 1] != null && _myArray[i, j + 1] != null)
                     {
                         return false;
                     }
+                    //}
 
-                    iterator++;
-                    if (iterator == 6)
-                    {
-                        iterator = 0;
-                        black = 0;
-                        white = 0;
-                    }
                 }
             }
             return true;
@@ -348,51 +306,33 @@ namespace Unruly
         /// only 2 fields which are consecutive can have the same color
         /// </summary>
         /// <returns></returns>
-        public bool Max2ColumnCheck()
+        public bool Max2RowCheck()
         {
 
-            
-
-            for (int i = 0; i < maxRows; i++)
+            for (int i = 1; i < maxRows - 1; i++)
             {
 
-                bool actualColor = (bool)_myArray[0, 0];
-                int black = 0;
-                int white = 0;
-                int iterator = 0;
+                //bool lastColor = (bool)_myArray[0, 0];
+
                 for (int j = 0; j < maxColumns; j++)
                 {
 
-                    actualColor = (bool)_myArray[j, i];
 
+                    //if ((black > 1 && actualColor == false && lastColor == false) || (white > 1 && actualColor == true && lastColor == true))
+                    //{
+                    //    return false;
+                    //}
 
-                    if ((black > 2 && actualColor == false) || (white > 2 && actualColor == true))
+                    //if (i < maxColumns && i > 0)
+                    //{
+                    if (_myArray[i - 1, j] == _myArray[i + 1, j] && _myArray[i - 1, j] != null && _myArray[i + 1, j] != null)
                     {
                         return false;
                     }
+                    //}
 
+                    //lastColor = (bool)_myArray[j, i];
 
-                    if (actualColor == true)
-                    {
-                        white++;
-                    }
-                    else if (actualColor == false)
-                    {
-                        black++;
-                    }
-                    else
-                    {
-
-                        return false;
-                    }
-
-                    iterator++;
-                    if (iterator == 6)
-                    {
-                        iterator = 0;
-                        black = 0;
-                        white = 0;
-                    }
                 }
             }
             return true;
@@ -409,7 +349,7 @@ namespace Unruly
         }
 
         #endregion
-        
+
         /// <summary>
         /// check if the solotion is right
         /// </summary>
@@ -422,7 +362,7 @@ namespace Unruly
             }
             else
             {
-                return  true;
+                return true;
             }
         }
 
@@ -448,6 +388,17 @@ namespace Unruly
 
             _myArray[assignmentResult.i, assignmentResult.j] = true;
 
+            if (!ContainsRuleViolation())
+            {
+                _myArray[assignmentResult.i, assignmentResult.j] = false;
+
+                if (!ContainsRuleViolation())
+                {
+                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    return false;
+                }
+
+            }
 
             //assign with white
 

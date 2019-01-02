@@ -28,13 +28,27 @@ namespace Unruly
 
 
             InitializeComponent();
-            myCanvas.Background = new SolidColorBrush(Colors.LightBlue);
-            createGame.InitFile();
-            createGame.CreateGrid(6, myCanvas);
-            
+
+
 
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            
+            myCanvas.Background = new SolidColorBrush(Colors.LightBlue);
+            createGame.InitFile("small");
+            createGame.CreateGrid(8, myCanvas);
+        }
 
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            
+            
+            myCanvas.Background = new SolidColorBrush(Colors.LightBlue);
+            createGame.InitFile("tiny");
+            createGame.CreateGrid(6, myCanvas);
+
+        }
     }
 }

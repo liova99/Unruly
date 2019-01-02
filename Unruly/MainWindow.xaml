@@ -5,19 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Unruly"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="600" Width="1000" ResizeMode="NoResize">
     <Canvas x:Name="myCanvas" >
 
         <Grid x:Name="myGrid">
-            
-            
-            
-            
-            
+
+
+
         </Grid>
-        
-        
-        
-        
+        <Button Content="8" Canvas.Left="495" Canvas.Top="90" Width="160" Tag="{Binding small}"   Click="Button_Click" Height="55"/>
+
+        <Button Content="6" Canvas.Left="520" Canvas.Top="178" Width="110" Tag="{Binding tiny}"    Height="45" Click="Button_Click_1"/>
+
+
     </Canvas>
 </Window>
