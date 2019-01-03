@@ -29,6 +29,9 @@ namespace Unruly
         private Brush _white = System.Windows.Media.Brushes.White;
         private Brush _gray = System.Windows.Media.Brushes.Gray;
 
+        AssignmentResult assignmentResult;
+        bool? valueBefore;
+
         public void CreateRectangle(Canvas myCanvas, String rectName, int x, int y, Nullable<Boolean> color)
         {
 
@@ -99,7 +102,7 @@ namespace Unruly
                 }
                 else
                 {
-                    MessageBox.Show("ERROR | restart the application");
+                    MessageBox.Show("I can not solve it :( ");
                 }
 
             };
@@ -211,15 +214,31 @@ namespace Unruly
 
         // TODO: Check the loops, make them more efficient
 
+
         public bool RowNumberCheck()
         {
-            for (int j = 0; j < maxColumns; j++)
+            for (int i = 0; i < maxColumns; i++)
             {
                 int white = 0;
                 int black = 0;
 
-                for (int i = 0; i < maxRows; i++)
+                for (int j = 0; j < maxRows; j++)
                 {
+                    if (_myArray[i, j] == null)
+                    {
+
+                        assignmentResult = new AssignmentResult { i = i, j = j };
+                        if ( white < maxRows / 2)
+                        {
+                            _myArray[i, j] = true;
+                        }
+                        else
+                        {
+                            _myArray[i, j] = false;
+                        }
+                
+                        RowNumberCheck();
+                    }
                     if (_myArray[i, j] == true)
                     {
                         white++;
@@ -244,14 +263,31 @@ namespace Unruly
         public bool ColumnNumberCheck()
         {
 
-            for (int i = 0; i < maxRows; i++)
+            for (int j = 0; j < maxRows; j++)
             {
                 int white = 0;
                 int black = 0;
 
-                for (int j = 0; j < maxColumns; j++)
+                for (int i = 0; i < maxColumns; i++)
                 {
-                    if (_myArray[i, j] == true)
+                    if (_myArray[i, j] == null)
+                    {
+                        
+                        assignmentResult = new AssignmentResult { i = i, j = j };
+
+                        if (white < maxRows / 2)
+                        {
+                            _myArray[i, j] = true;
+                        }
+                        else
+                        {
+                            _myArray[i, j] = false;
+                        }
+
+                        ColumnNumberCheck();
+                    }
+
+                    else if (_myArray[i, j] == true)
                     {
                         white++;
                     }
@@ -271,31 +307,21 @@ namespace Unruly
         }
 
         /// <summary>
-        /// //only 2 fields which are consecutive can have the same color
+        /// only 2 fields which are consecutive can have the same color
         /// </summary>
         /// <returns></returns>
-        public bool Max2ColumnCheck()
+        public bool Max2RowCheck()
         {
+
             for (int i = 0; i < maxRows; i++)
             {
-                //bool? lastColor =  (bool)_myArray[0, 0];
-
                 for (int j = 1; j < maxColumns - 1; j++)
                 {
 
-                    //if ((black > 1 && actualColor == false && lastColor == false) || (white > 2 && actualColor == true && lastColor == true))
-                    //{
-
-                    //    return false;
-                    //}
-
-                    //if (j < maxRows && j > 0)
-                    //{
-                    if (_myArray[i, j - 1] == _myArray[i, j + 1] && _myArray[i, j - 1] != null && _myArray[i, j + 1] != null)
+                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j]))
                     {
                         return false;
                     }
-                    //}
 
                 }
             }
@@ -303,40 +329,28 @@ namespace Unruly
         }
 
         /// <summary>
-        /// only 2 fields which are consecutive can have the same color
+        /// //only 2 fields which are consecutive can have the same color
         /// </summary>
         /// <returns></returns>
-        public bool Max2RowCheck()
+        public bool Max2ColumnCheck()
         {
-
-            for (int i = 1; i < maxRows - 1; i++)
+            for (int j = 0; j < maxRows; j++)
             {
 
-                //bool lastColor = (bool)_myArray[0, 0];
-
-                for (int j = 0; j < maxColumns; j++)
+                for (int i = 1; i < maxColumns - 1; i++)
                 {
 
-
-                    //if ((black > 1 && actualColor == false && lastColor == false) || (white > 1 && actualColor == true && lastColor == true))
-                    //{
-                    //    return false;
-                    //}
-
-                    //if (i < maxColumns && i > 0)
-                    //{
-                    if (_myArray[i - 1, j] == _myArray[i + 1, j] && _myArray[i - 1, j] != null && _myArray[i + 1, j] != null)
+                    if (new[] { _myArray[i - 1, j], _myArray[i + 1, j] }.All(x => x == _myArray[i, j]))
                     {
+
                         return false;
                     }
-                    //}
-
-                    //lastColor = (bool)_myArray[j, i];
-
                 }
             }
             return true;
         }
+
+
 
         /// <summary>
         /// true = No rule violation
@@ -376,29 +390,45 @@ namespace Unruly
 
 
             //choose variable to assign
-            AssignmentResult assignmentResult = GetNextAssignment();
+            //AssignmentResult assignmentResult = GetNextAssignment();
 
-            if (assignmentResult == null)
-            {
-                //Console.WriteLine($"Rulle Violation {ContainsRuleViolation().ToString()}");
-                return ContainsRuleViolation();
-            }
-
-            bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
-
-            _myArray[assignmentResult.i, assignmentResult.j] = true;
+            //if (assignmentResult == null)
+            //{
+            //    //Console.WriteLine($"Rulle Violation {ContainsRuleViolation().ToString()}");
+            //    return ContainsRuleViolation();
+            //}
 
             if (!ContainsRuleViolation())
             {
-                _myArray[assignmentResult.i, assignmentResult.j] = false;
+                valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+
+                _myArray[assignmentResult.i, assignmentResult.j] = true;
 
                 if (!ContainsRuleViolation())
                 {
-                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-                    return false;
-                }
+                    _myArray[assignmentResult.i, assignmentResult.j] = false;
 
+                    if (!ContainsRuleViolation())
+                    {
+                        _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    }
+
+                }
             }
+
+
+
+            //if (!ContainsRuleViolation())
+            //{
+            //    _myArray[assignmentResult.i, assignmentResult.j] = false;
+
+            //    if (!ContainsRuleViolation())
+            //    {
+            //        _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+
+            //    }
+
+            //}
 
             //assign with white
 
