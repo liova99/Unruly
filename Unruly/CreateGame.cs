@@ -32,6 +32,9 @@ namespace Unruly
         AssignmentResult assignmentResult;
         bool? valueBefore;
 
+        //TEST/ DEBUG
+        public Canvas myCanvas;
+
         public void CreateRectangle(Canvas myCanvas, String rectName, int x, int y, Nullable<Boolean> color)
         {
 
@@ -217,6 +220,8 @@ namespace Unruly
 
         public bool RowNumberCheck()
         {
+
+
             for (int i = 0; i < maxColumns; i++)
             {
                 int white = 0;
@@ -226,18 +231,30 @@ namespace Unruly
                 {
                     if (_myArray[i, j] == null)
                     {
+                        //assignmentResult = new AssignmentResult { i = i, j = j };
 
-                        assignmentResult = new AssignmentResult { i = i, j = j };
-                        if ( white < maxRows / 2)
+                        if (white < 3)
                         {
                             _myArray[i, j] = true;
+                            if (!Max2ColumnCheck() || !Max2RowCheck())
+                            {
+                                _myArray[i, j] = false;
+                            }
+                        }
+                        else if (black < 3)
+                        {
+                            _myArray[i, j] = false;
+                            if (!Max2ColumnCheck() || !Max2RowCheck())
+                            {
+                                _myArray[i, j] = null;
+                            }
                         }
                         else
                         {
-                            _myArray[i, j] = false;
+                            _myArray[i, j] = null;
                         }
-                
-                        RowNumberCheck();
+
+
                     }
                     if (_myArray[i, j] == true)
                     {
@@ -250,11 +267,13 @@ namespace Unruly
 
                     if (white > maxRows / 2 || black > maxRows / 2)
                     {
+                        _myArray[i, j] = null;
                         return false;
                     }
 
                 }
             }
+
             return true;
         }
 
@@ -270,24 +289,8 @@ namespace Unruly
 
                 for (int i = 0; i < maxColumns; i++)
                 {
-                    if (_myArray[i, j] == null)
-                    {
-                        
-                        assignmentResult = new AssignmentResult { i = i, j = j };
-
-                        if (white < maxRows / 2)
-                        {
-                            _myArray[i, j] = true;
-                        }
-                        else
-                        {
-                            _myArray[i, j] = false;
-                        }
-
-                        ColumnNumberCheck();
-                    }
-
-                    else if (_myArray[i, j] == true)
+                   
+                    if (_myArray[i, j] == true)
                     {
                         white++;
                     }
@@ -300,6 +303,7 @@ namespace Unruly
                     {
                         return false;
                     }
+                    
                 }
             }
             return true;
@@ -318,8 +322,10 @@ namespace Unruly
                 for (int j = 1; j < maxColumns - 1; j++)
                 {
 
-                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j]))
+                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j] && x !=null))
                     {
+
+
                         return false;
                     }
 
@@ -340,9 +346,8 @@ namespace Unruly
                 for (int i = 1; i < maxColumns - 1; i++)
                 {
 
-                    if (new[] { _myArray[i - 1, j], _myArray[i + 1, j] }.All(x => x == _myArray[i, j]))
+                    if (new[] { _myArray[i - 1, j], _myArray[i + 1, j] }.All(x => x == _myArray[i, j] && x != null))
                     {
-
                         return false;
                     }
                 }
@@ -398,57 +403,71 @@ namespace Unruly
             //    return ContainsRuleViolation();
             //}
 
-            if (!ContainsRuleViolation())
-            {
-                valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
-
-                _myArray[assignmentResult.i, assignmentResult.j] = true;
-
-                if (!ContainsRuleViolation())
-                {
-                    _myArray[assignmentResult.i, assignmentResult.j] = false;
-
-                    if (!ContainsRuleViolation())
-                    {
-                        _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-                    }
-
-                }
-            }
-
-
-
             //if (!ContainsRuleViolation())
             //{
-            //    _myArray[assignmentResult.i, assignmentResult.j] = false;
+            //    valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+
+            //    _myArray[assignmentResult.i, assignmentResult.j] = true;
 
             //    if (!ContainsRuleViolation())
             //    {
-            //        _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+            //        _myArray[assignmentResult.i, assignmentResult.j] = false;
+
+            //        if (!ContainsRuleViolation())
+            //        {
+            //            _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+            //        }
 
             //    }
-
             //}
 
+
+            //valueBefore = null;
+            //if (!ContainsRuleViolation())
+            //{
+            //    ContainsRuleViolation();
+
+            //}
+            for (int i = 0; i < 230; i++)
+            {
+                ContainsRuleViolation();
+
+            }
+
+            ContainsRuleViolation();
+
+            return true;
+
+            //ContainsRuleViolation();
+            //_myArray[assignmentResult.i, assignmentResult.j];
+            // _myArray[assignmentResult.i, assignmentResult.j] = true;
             //assign with white
 
             if (!Solve())
             {
-                //unassign value
-                //assign black
+                //    //unassign value
+                //    //assign black
 
-                _myArray[assignmentResult.i, assignmentResult.j] = false;
+                //    _myArray[assignmentResult.i, assignmentResult.j] = false;
 
-                if (!Solve())
-                {
-                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                //    if (!Solve())
+                //    {
+                //        _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
 
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
+                //        return false;
+                //    }
+                //    else
+                //    {
+                //        return true;
+                //    }
+                //}
+                //else
+                //{
+                //    return true;
+                //}
+
+                Solve();
+                return false;
             }
             else
             {
