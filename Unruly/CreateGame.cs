@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Windows.Media;
 using System.Windows.Documents;
+using System.Threading;
 
 namespace Unruly
 {
@@ -20,10 +21,9 @@ namespace Unruly
 
         private Nullable<Boolean>[,] _myArray = null;
         private Nullable<Boolean>[,] _initalArray;
+        private Rectangle[,] rectangles;
 
         int maxRows, maxColumns;
-
-        private bool _isAButton = false;
 
         private Brush _black = System.Windows.Media.Brushes.Black;
         private Brush _white = System.Windows.Media.Brushes.White;
@@ -33,52 +33,14 @@ namespace Unruly
         bool? valueBefore;
 
         //TEST/ DEBUG
-        public Canvas myCanvas;
+        private Canvas myCanvas;
 
-        public void CreateRectangle(Canvas myCanvas, String rectName, int x, int y, Nullable<Boolean> color)
+        public CreateGame(Canvas myCanvas)
         {
+            this.myCanvas = myCanvas;
 
-            Rectangle myRect = new System.Windows.Shapes.Rectangle();
             Button checkBtn = new Button();
             Button showSolutionBtn = new Button();
-
-
-            myRect.Stroke = System.Windows.Media.Brushes.Black;
-            myRect.HorizontalAlignment = HorizontalAlignment.Left;
-            myRect.VerticalAlignment = VerticalAlignment.Center;
-            myRect.Height = _myRectangleSize;
-            myRect.Width = _myRectangleSize;
-
-            myRect.Name = rectName + x.ToString() + y.ToString();
-
-            myRect.MouseLeftButtonUp += (sender, args) =>
-            {
-                Console.WriteLine($"Clicked Rect {myRect.Name}");
-
-                color = _myArray[x, y];
-
-                if (color == null)
-                {
-                    _myArray[x, y] = false;
-                    myRect.Fill = _black;
-
-                }
-                else if (color == true)
-                {
-                    _myArray[x, y] = null;
-                    myRect.Fill = _gray;
-
-                }
-                else if (color == false)
-                {
-                    _myArray[x, y] = true;
-                    myRect.Fill = _white;
-
-                }
-
-            };
-
-
 
             checkBtn.Click += (sender, args) =>
             {
@@ -99,16 +61,99 @@ namespace Unruly
 
                 _myArray = _initalArray.Clone() as Nullable<Boolean>[,];
 
-                if (Solve())
+
+
+                Task.Run(() =>
                 {
-                    CreateGrid(maxColumns, myCanvas);
-                }
-                else
-                {
-                    MessageBox.Show("I can not solve it :( ");
-                }
+                    if (Solve())
+                    {
+                        CreateGrid(maxColumns, myCanvas);
+                    }
+                    else
+                    {
+                        CreateGrid(maxColumns, myCanvas);
+                        MessageBox.Show("I can not solve it :( ");
+                    }
+                });
 
             };
+
+            // check Button
+            checkBtn.Content = "Ready?!!";
+            checkBtn.Width = 200;
+            checkBtn.Height = 200;
+
+            // showSolution Button
+            showSolutionBtn.Content = "Can't do it?!!";
+            showSolutionBtn.Width = 200;
+            showSolutionBtn.Height = 200;
+            myCanvas.Children.Add(checkBtn);
+            myCanvas.Children.Add(showSolutionBtn);
+
+            Canvas.SetRight(checkBtn, _myRectangleSize);
+            Canvas.SetBottom(checkBtn, _myRectangleSize);
+
+            Canvas.SetRight(showSolutionBtn, _myRectangleSize);
+            Canvas.SetTop(showSolutionBtn, _myRectangleSize);
+
+
+        }
+
+        public void CreateRectangle(Canvas myCanvas, String rectName, int x, int y, Nullable<Boolean> color)
+        {
+            Rectangle myRect;
+            if (rectangles[x, y] == null)
+            {
+                myRect = new System.Windows.Shapes.Rectangle();
+                myRect.Stroke = System.Windows.Media.Brushes.Black;
+                myRect.HorizontalAlignment = HorizontalAlignment.Left;
+                myRect.VerticalAlignment = VerticalAlignment.Center;
+                myRect.Height = _myRectangleSize;
+                myRect.Width = _myRectangleSize;
+
+                myRect.Name = rectName + x.ToString() + y.ToString();
+
+                myRect.MouseLeftButtonUp += (sender, args) =>
+                {
+                    Console.WriteLine($"Clicked Rect {myRect.Name}");
+
+                    color = _myArray[x, y];
+
+                    if (color == null)
+                    {
+                        _myArray[x, y] = false;
+                        myRect.Fill = _black;
+
+                    }
+                    else if (color == true)
+                    {
+                        _myArray[x, y] = null;
+                        myRect.Fill = _gray;
+
+                    }
+                    else if (color == false)
+                    {
+                        _myArray[x, y] = true;
+                        myRect.Fill = _white;
+
+                    }
+
+                };
+                myCanvas.Children.Add(myRect);
+                Canvas.SetTop(myRect, x * _myRectangleSize);
+                Canvas.SetLeft(myRect, y * _myRectangleSize);
+
+
+                rectangles[x, y] = myRect;
+            }
+            else
+            {
+                myRect = rectangles[x, y];
+            }
+
+
+
+
 
             if (_color == null)
             {
@@ -126,33 +171,7 @@ namespace Unruly
 
             }
 
-            // check Button
-            checkBtn.Content = "Ready?!!";
-            checkBtn.Width = 200;
-            checkBtn.Height = 200;
 
-            // showSolution Button
-            showSolutionBtn.Content = "Can't do it?!!";
-            showSolutionBtn.Width = 200;
-            showSolutionBtn.Height = 200;
-
-            if (_isAButton == false)
-            {
-                myCanvas.Children.Add(checkBtn);
-                myCanvas.Children.Add(showSolutionBtn);
-
-                Canvas.SetRight(checkBtn, y * _myRectangleSize);
-                Canvas.SetBottom(checkBtn, y * _myRectangleSize);
-
-                Canvas.SetRight(showSolutionBtn, y * _myRectangleSize);
-                Canvas.SetTop(showSolutionBtn, y * _myRectangleSize);
-
-                _isAButton = true;
-            }
-
-            myCanvas.Children.Add(myRect);
-            Canvas.SetTop(myRect, x * _myRectangleSize);
-            Canvas.SetLeft(myRect, y * _myRectangleSize);
 
         }
 
@@ -180,6 +199,8 @@ namespace Unruly
 
             _myArray = OpenFile($@"Resources\Puzzle\{size}_{randomNumber}.txt");
             _initalArray = OpenFile($@"Resources\Puzzle\{size}_{randomNumber}.txt");
+
+            rectangles = new Rectangle[maxRows, maxColumns];
 
         }
 
@@ -218,10 +239,10 @@ namespace Unruly
         // TODO: Check the loops, make them more efficient
 
 
+
+
         public bool RowNumberCheck()
         {
-
-
             for (int i = 0; i < maxColumns; i++)
             {
                 int white = 0;
@@ -229,33 +250,7 @@ namespace Unruly
 
                 for (int j = 0; j < maxRows; j++)
                 {
-                    if (_myArray[i, j] == null)
-                    {
-                        //assignmentResult = new AssignmentResult { i = i, j = j };
 
-                        if (white < 3)
-                        {
-                            _myArray[i, j] = true;
-                            if (!Max2ColumnCheck() || !Max2RowCheck())
-                            {
-                                _myArray[i, j] = false;
-                            }
-                        }
-                        else if (black < 3)
-                        {
-                            _myArray[i, j] = false;
-                            if (!Max2ColumnCheck() || !Max2RowCheck())
-                            {
-                                _myArray[i, j] = null;
-                            }
-                        }
-                        else
-                        {
-                            _myArray[i, j] = null;
-                        }
-
-
-                    }
                     if (_myArray[i, j] == true)
                     {
                         white++;
@@ -267,16 +262,13 @@ namespace Unruly
 
                     if (white > maxRows / 2 || black > maxRows / 2)
                     {
-                        _myArray[i, j] = null;
                         return false;
                     }
 
                 }
             }
-
             return true;
         }
-
 
 
         public bool ColumnNumberCheck()
@@ -289,7 +281,7 @@ namespace Unruly
 
                 for (int i = 0; i < maxColumns; i++)
                 {
-                   
+
                     if (_myArray[i, j] == true)
                     {
                         white++;
@@ -303,7 +295,7 @@ namespace Unruly
                     {
                         return false;
                     }
-                    
+
                 }
             }
             return true;
@@ -322,9 +314,8 @@ namespace Unruly
                 for (int j = 1; j < maxColumns - 1; j++)
                 {
 
-                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j] && x !=null))
+                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j]))
                     {
-
 
                         return false;
                     }
@@ -346,7 +337,7 @@ namespace Unruly
                 for (int i = 1; i < maxColumns - 1; i++)
                 {
 
-                    if (new[] { _myArray[i - 1, j], _myArray[i + 1, j] }.All(x => x == _myArray[i, j] && x != null))
+                    if (new[] { _myArray[i - 1, j], _myArray[i + 1, j] }.All(x => x == _myArray[i, j]))
                     {
                         return false;
                     }
@@ -394,86 +385,62 @@ namespace Unruly
             //optimization: some rule violations can be detected before everything is complete
 
 
+
             //choose variable to assign
-            //AssignmentResult assignmentResult = GetNextAssignment();
+            AssignmentResult assignmentResult = GetNextAssignment();
 
-            //if (assignmentResult == null)
-            //{
-            //    //Console.WriteLine($"Rulle Violation {ContainsRuleViolation().ToString()}");
-            //    return ContainsRuleViolation();
-            //}
-
-            //if (!ContainsRuleViolation())
-            //{
-            //    valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
-
-            //    _myArray[assignmentResult.i, assignmentResult.j] = true;
-
-            //    if (!ContainsRuleViolation())
-            //    {
-            //        _myArray[assignmentResult.i, assignmentResult.j] = false;
-
-            //        if (!ContainsRuleViolation())
-            //        {
-            //            _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-            //        }
-
-            //    }
-            //}
-
-
-            //valueBefore = null;
-            //if (!ContainsRuleViolation())
-            //{
-            //    ContainsRuleViolation();
-
-            //}
-            for (int i = 0; i < 230; i++)
+            if (assignmentResult == null)
             {
-                ContainsRuleViolation();
-
+                //Console.WriteLine($"Rulle Violation {ContainsRuleViolation().ToString()}");
+                return ContainsRuleViolation();
             }
 
-            ContainsRuleViolation();
 
-            return true;
+            bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+            _myArray[assignmentResult.i, assignmentResult.j] = true;
+            myCanvas.Dispatcher.Invoke(() =>
+            {
+                rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.White;
+            }, System.Windows.Threading.DispatcherPriority.Render);
+            //CreateGrid(maxRows, myCanvas);
 
-            //ContainsRuleViolation();
-            //_myArray[assignmentResult.i, assignmentResult.j];
-            // _myArray[assignmentResult.i, assignmentResult.j] = true;
-            //assign with white
+
+
 
             if (!Solve())
             {
-                //    //unassign value
-                //    //assign black
+                //unassign value
+                //assign black
 
-                //    _myArray[assignmentResult.i, assignmentResult.j] = false;
+                _myArray[assignmentResult.i, assignmentResult.j] = false;
+                myCanvas.Dispatcher.Invoke(() =>
+                {
+                    rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.Black;
+                }, System.Windows.Threading.DispatcherPriority.Render);
 
-                //    if (!Solve())
-                //    {
-                //        _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                //CreateGrid(maxRows, myCanvas);
 
-                //        return false;
-                //    }
-                //    else
-                //    {
-                //        return true;
-                //    }
-                //}
-                //else
-                //{
-                //    return true;
-                //}
+                if (!Solve())
+                {
+                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    myCanvas.Dispatcher.Invoke(() =>
+                    {
+                        rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.Gray;
+                    }, System.Windows.Threading.DispatcherPriority.Render);
 
-                Solve();
-                return false;
+
+                    //CreateGrid(maxRows, myCanvas);
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
             else
             {
                 return true;
             }
-
         }
 
 

@@ -21,7 +21,7 @@ namespace Unruly
     /// </summary>
     public partial class MainWindow : Window
     {
-        CreateGame createGame = new CreateGame();
+        CreateGame createGame;
 
         public MainWindow()
         {
@@ -29,13 +29,13 @@ namespace Unruly
 
             InitializeComponent();
 
-
+            createGame = new CreateGame(myCanvas);
 
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            
+
             myCanvas.Background = new SolidColorBrush(Colors.LightBlue);
             createGame.InitFile("small");
             createGame.CreateGrid(8, myCanvas);
@@ -43,8 +43,8 @@ namespace Unruly
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            
-            
+
+
             myCanvas.Background = new SolidColorBrush(Colors.LightBlue);
             createGame.InitFile("tiny");
             createGame.CreateGrid(6, myCanvas);
