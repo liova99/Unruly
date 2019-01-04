@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Unruly"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1000" ResizeMode="NoResize">
+        Title="MainWindow" Height="1000" Width="1000" >
     <Canvas x:Name="myCanvas" >
 
         <Grid x:Name="myGrid">

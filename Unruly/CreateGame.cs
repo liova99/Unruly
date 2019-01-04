@@ -68,11 +68,17 @@ namespace Unruly
                 {
                     if (Solve())
                     {
+                        myCanvas.Dispatcher.Invoke(() =>
+                        {
+
+                            CreateGrid(maxRows, myCanvas);
+                        });
                     }
                     else
                     {
                         myCanvas.Dispatcher.Invoke(() =>
                         {
+                            CreateGrid(maxRows, myCanvas);
                             MessageBox.Show("I can not solve it :( ");
                         });
                     }
@@ -379,6 +385,16 @@ namespace Unruly
             }
         }
 
+        private void Assign(AssignmentResult assignmentResult, bool? color)
+        {
+            _myArray[assignmentResult.i, assignmentResult.j] = color;
+            myCanvas.Dispatcher.Invoke(() =>
+            {
+                rectangles[assignmentResult.i, assignmentResult.j].Fill = color == true ? Brushes.White : color == null ? Brushes.Gray : Brushes.Black;
+            }, System.Windows.Threading.DispatcherPriority.Render);
+
+        }
+
         /// <summary>
         /// Solve the puzzle
         /// </summary>
@@ -387,6 +403,10 @@ namespace Unruly
         {
             //optimization: some rule violations can be detected before everything is complete
 
+            if (!ContainsRuleViolation())
+            {
+                return false;
+            }
 
 
             //choose variable to assign
@@ -399,32 +419,17 @@ namespace Unruly
                 return ContainsRuleViolation();
             }
 
-            Thread.Sleep(500);
+
 
             bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
-            _myArray[assignmentResult.i, assignmentResult.j] = true;
-            myCanvas.Dispatcher.Invoke(() =>
+
+            Assign(assignmentResult, true);
+            if (!Solve())
             {
-                rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.White;
-            }, System.Windows.Threading.DispatcherPriority.Render);
-
-
-            if (!ContainsRuleViolation())
-            {
-                _myArray[assignmentResult.i, assignmentResult.j] = false;
-                myCanvas.Dispatcher.Invoke(() =>
+                Assign(assignmentResult, false);
+                if (!Solve())
                 {
-                    rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.Black;
-                }, System.Windows.Threading.DispatcherPriority.Render);
-
-                if (!ContainsRuleViolation())
-                {
-                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-                    myCanvas.Dispatcher.Invoke(() =>
-                    {
-                        rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.Gray;
-                    }, System.Windows.Threading.DispatcherPriority.Render);
-
+                    Assign(assignmentResult, valueBefore);
                     return false;
                 }
                 else
@@ -438,8 +443,6 @@ namespace Unruly
             {
                 return Solve();
             }
-
-
 
 
 

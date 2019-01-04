@@ -37,8 +37,8 @@ namespace Unruly
         {
 
             myCanvas.Background = new SolidColorBrush(Colors.LightBlue);
-            createGame.InitFile("small");
-            createGame.CreateGrid(8, myCanvas);
+            createGame.InitFile("med");
+            createGame.CreateGrid(14, myCanvas);
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
