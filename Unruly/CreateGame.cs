@@ -64,16 +64,19 @@ namespace Unruly
 
 
 
-
-                if (Solve())
+                Task.Run(() =>
                 {
-                    CreateGrid(maxColumns, myCanvas);
-                }
-                else
-                {
-                    CreateGrid(maxColumns, myCanvas);
-                    MessageBox.Show("I can not solve it :( ");
-                }
+                    if (Solve())
+                    {
+                    }
+                    else
+                    {
+                        myCanvas.Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show("I can not solve it :( ");
+                        });
+                    }
+                });
 
 
             };
@@ -396,17 +399,32 @@ namespace Unruly
                 return ContainsRuleViolation();
             }
 
+            Thread.Sleep(500);
 
             bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
             _myArray[assignmentResult.i, assignmentResult.j] = true;
+            myCanvas.Dispatcher.Invoke(() =>
+            {
+                rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.White;
+            }, System.Windows.Threading.DispatcherPriority.Render);
+
 
             if (!ContainsRuleViolation())
             {
                 _myArray[assignmentResult.i, assignmentResult.j] = false;
+                myCanvas.Dispatcher.Invoke(() =>
+                {
+                    rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.Black;
+                }, System.Windows.Threading.DispatcherPriority.Render);
 
                 if (!ContainsRuleViolation())
                 {
                     _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    myCanvas.Dispatcher.Invoke(() =>
+                    {
+                        rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.Gray;
+                    }, System.Windows.Threading.DispatcherPriority.Render);
+
                     return false;
                 }
                 else
@@ -423,25 +441,6 @@ namespace Unruly
 
 
 
-            if (!Solve())
-            {
-
-                _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-
-                if (!Solve())
-                {
-                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                return true;
-            }
 
 
 
