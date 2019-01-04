@@ -314,7 +314,7 @@ namespace Unruly
                 for (int j = 1; j < maxColumns - 1; j++)
                 {
 
-                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j]))
+                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j] && _myArray[i, j] != null ))
                     {
 
                         return false;
@@ -337,7 +337,7 @@ namespace Unruly
                 for (int i = 1; i < maxColumns - 1; i++)
                 {
 
-                    if (new[] { _myArray[i - 1, j], _myArray[i + 1, j] }.All(x => x == _myArray[i, j]))
+                    if (new[] { _myArray[i - 1, j], _myArray[i + 1, j] }.All(x => x == _myArray[i, j] && _myArray[i, j] != null))
                     {
                         return false;
                     }
@@ -390,60 +390,59 @@ namespace Unruly
             AssignmentResult assignmentResult = GetNextAssignment();
 
 
-
-
-
-
-
-
-
             if (assignmentResult == null)
             {
 
-                return true; //ContainsRuleViolation();
+                return true; // ContainsRuleViolation();
+            }
+
+            try
+            {
+
+                bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+                _myArray[assignmentResult.i, assignmentResult.j] = true;
+            }
+            catch
+            {
+                Console.WriteLine("nothing to say");
+                return true;
+            }
+            if (!ContainsRuleViolation())
+            {
+                _myArray[assignmentResult.i, assignmentResult.j] = false;
+
+                if (!ContainsRuleViolation())
+                {
+                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                }
+               
+
             }
 
 
 
-
-
-
-            valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
-
             if (!Solve())
             {
-               
-                _myArray[assignmentResult.i, assignmentResult.j] = true;
-
-                if (!ContainsRuleViolation())
-                {
-                    _myArray[assignmentResult.i, assignmentResult.j] = false;
-                    
-                }
-                else
-                {
-                    return true;
-                }
+                
+                _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
 
                 if (!Solve())
                 {
-                    
                     _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
                     return false;
- 
                 }
                 else
                 {
                     return true;
                 }
-
             }
             else
             {
                 return true;
             }
-           
-            
+
+
+
         }
 
 
