@@ -397,11 +397,11 @@ namespace Unruly
 
 
 
-            //if (assignmentResult == null)
-            //{
-            //   
-            //    return ContainsRuleViolation();
-            //}
+            if (assignmentResult == null)
+            {
+
+                return true; //ContainsRuleViolation();
+            }
 
 
 
@@ -410,7 +410,7 @@ namespace Unruly
 
             valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
 
-            if (!Solve() && assignmentResult != null)
+            if (!Solve())
             {
                
                 _myArray[assignmentResult.i, assignmentResult.j] = true;
@@ -427,15 +427,10 @@ namespace Unruly
 
                 if (!Solve())
                 {
-                    if (!ContainsRuleViolation())
-                    {
-                        _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
-                    }
+                    
+                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    return false;
+ 
                 }
                 else
                 {
