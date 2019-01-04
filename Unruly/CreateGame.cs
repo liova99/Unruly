@@ -63,18 +63,18 @@ namespace Unruly
 
 
 
-                Task.Run(() =>
+
+
+                if (Solve())
                 {
-                    if (Solve())
-                    {
-                        CreateGrid(maxColumns, myCanvas);
-                    }
-                    else
-                    {
-                        CreateGrid(maxColumns, myCanvas);
-                        MessageBox.Show("I can not solve it :( ");
-                    }
-                });
+                    CreateGrid(maxColumns, myCanvas);
+                }
+                else
+                {
+                    CreateGrid(maxColumns, myCanvas);
+                    MessageBox.Show("I can not solve it :( ");
+                }
+
 
             };
 
@@ -389,48 +389,50 @@ namespace Unruly
             //choose variable to assign
             AssignmentResult assignmentResult = GetNextAssignment();
 
-            if (assignmentResult == null)
+
+
+
+
+
+
+
+
+            //if (assignmentResult == null)
+            //{
+            //   
+            //    return ContainsRuleViolation();
+            //}
+
+
+
+
+
+
+            valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+
+            if (!Solve() && assignmentResult != null)
             {
-                //Console.WriteLine($"Rulle Violation {ContainsRuleViolation().ToString()}");
-                return ContainsRuleViolation();
-            }
 
+               
+                _myArray[assignmentResult.i, assignmentResult.j] = true;
 
-            bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
-            _myArray[assignmentResult.i, assignmentResult.j] = true;
-            myCanvas.Dispatcher.Invoke(() =>
-            {
-                rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.White;
-            }, System.Windows.Threading.DispatcherPriority.Render);
-            //CreateGrid(maxRows, myCanvas);
-
-
-
-
-            if (!Solve())
-            {
-                //unassign value
-                //assign black
-
-                _myArray[assignmentResult.i, assignmentResult.j] = false;
-                myCanvas.Dispatcher.Invoke(() =>
-                {
-                    rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.Black;
-                }, System.Windows.Threading.DispatcherPriority.Render);
-
-                //CreateGrid(maxRows, myCanvas);
 
                 if (!Solve())
                 {
-                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-                    myCanvas.Dispatcher.Invoke(() =>
+                    if (assignmentResult != null)
                     {
-                        rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.Gray;
-                    }, System.Windows.Threading.DispatcherPriority.Render);
+                        if (!ContainsRuleViolation())
+                        {
+                            _myArray[assignmentResult.i, assignmentResult.j] = false;
 
-
-                    //CreateGrid(maxRows, myCanvas);
-                    return false;
+                            if (!ContainsRuleViolation())
+                            {
+                                _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                                return false;
+                            }
+                        }
+                    }
+                    
                 }
                 else
                 {
