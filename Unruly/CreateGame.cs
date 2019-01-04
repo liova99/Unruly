@@ -10,31 +10,32 @@ using System.Windows.Shapes;
 using System.Windows.Media;
 using System.Windows.Documents;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Unruly
 {
-    class CreateGame
+    public class CreateGame
     {
+        public HashSet<Tuple<int, int>> unassignedPositions = new HashSet<Tuple<int, int>>();
+
         private int _myRectangleSize = 50;
 
         private Nullable<Boolean> _color = null;
 
-        private Nullable<Boolean>[,] _myArray = null;
+        public Nullable<Boolean>[,] _myArray = null;
         private Nullable<Boolean>[,] _initalArray;
         private Rectangle[,] rectangles;
 
-        int maxRows, maxColumns;
+        public int maxRows, maxColumns;
 
         private Brush _black = System.Windows.Media.Brushes.Black;
         private Brush _white = System.Windows.Media.Brushes.White;
         private Brush _gray = System.Windows.Media.Brushes.Gray;
 
-        AssignmentResult assignmentResult;
-        bool? valueBefore;
-
         //TEST/ DEBUG
         private Canvas myCanvas;
 
+        private IAssignmentStragey assignmentStragey = new SmartAssignmentStrategy();
         public CreateGame(Canvas myCanvas)
         {
             this.myCanvas = myCanvas;
@@ -66,7 +67,17 @@ namespace Unruly
 
                 Task.Run(() =>
                 {
-                    if (Solve())
+
+                    bool result;
+
+                    Stopwatch stopwatch = new Stopwatch();
+                    stopwatch.Start();
+                    result = Solve();
+                    stopwatch.Stop();
+
+                    Console.WriteLine(stopwatch.Elapsed);
+
+                    if (result)
                     {
                         myCanvas.Dispatcher.Invoke(() =>
                         {
@@ -199,48 +210,21 @@ namespace Unruly
         public void InitFile(string size)
         {
             Random random = new Random();
-            int randomNumber = random.Next(1, 3);
+            int randomNumber = random.Next(1, 2);
 
             //int randomNumber = 3;
 
             //_myArray = OpenFile($@"Resources\Puzzle\small_{randomNumber}.txt");
             //_initalArray = OpenFile($@"Resources\Puzzle\small_{randomNumber}.txt");
 
-            _myArray = OpenFile($@"Resources\Puzzle\{size}_{randomNumber}.txt");
-            _initalArray = OpenFile($@"Resources\Puzzle\{size}_{randomNumber}.txt");
+            _myArray = OpenFile($@"C:\Temp\{size}_{randomNumber}.txt");
+            _initalArray = OpenFile($@"C:\Temp\{size}_{randomNumber}.txt");
 
             rectangles = new Rectangle[maxRows, maxColumns];
 
         }
 
-        public class AssignmentResult
-        {
-            public int i, j;
-        }
 
-
-        /// <summary>
-        /// returns null if there is no assignment possible
-        /// (if there isn't any null field)
-        /// </summary>
-        /// <returns></returns>
-        public AssignmentResult GetNextAssignment()
-        {
-            for (int i = 0; i < maxRows; i++)
-            {
-                for (int j = 0; j < maxColumns; j++)
-                {
-                    if (_myArray[i, j] == null)
-                    {
-
-                        return new AssignmentResult() { i = i, j = j };
-                    }
-
-                }
-            }
-
-            return null;
-        }
 
 
         #region Check if rule violation
@@ -375,7 +359,7 @@ namespace Unruly
         /// <returns></returns>
         public bool Solved()
         {
-            if (GetNextAssignment() != null || ContainsRuleViolation() == false)
+            if (assignmentStragey.GetNextAssignment(this) != null || ContainsRuleViolation() == false)
             {
                 return false;
             }
@@ -385,15 +369,69 @@ namespace Unruly
             }
         }
 
-        private void Assign(AssignmentResult assignmentResult, bool? color)
+        private void Assign(AssignmentResult assignmentResult, bool color)
         {
+            unassignedPositions.Remove(new Tuple<int, int>(assignmentResult.i, assignmentResult.j));
             _myArray[assignmentResult.i, assignmentResult.j] = color;
             myCanvas.Dispatcher.Invoke(() =>
             {
-                rectangles[assignmentResult.i, assignmentResult.j].Fill = color == true ? Brushes.White : color == null ? Brushes.Gray : Brushes.Black;
+                rectangles[assignmentResult.i, assignmentResult.j].Fill = color == true ? Brushes.White : Brushes.Black;
             }, System.Windows.Threading.DispatcherPriority.Render);
 
         }
+
+        private void UnAssign(AssignmentResult assignmentResult)
+        {
+            unassignedPositions.Add(new Tuple<int, int>(assignmentResult.i, assignmentResult.j));
+            _myArray[assignmentResult.i, assignmentResult.j] = null;
+            myCanvas.Dispatcher.Invoke(() =>
+            {
+                rectangles[assignmentResult.i, assignmentResult.j].Fill = Brushes.Gray;
+            }, System.Windows.Threading.DispatcherPriority.Render);
+
+        }
+
+
+        public List<AssignmentResult> UnitPropagation()
+        {
+            List<AssignmentResult> assignments = new List<AssignmentResult>();
+            return assignments;
+            bool hasFoundSomething = false;
+
+            do
+            {
+                hasFoundSomething = false;
+
+                for (int i = 0; i < maxRows; i++)
+                {
+                    for (int j = 0; j < maxColumns; j++)
+                    {
+                        if (j > 2 && _myArray[i, j] == null)
+                        {
+                            //todo check if we can do it 
+                            if (_myArray[i, j - 2] == _myArray[i, j - 1] == true)
+                            {
+                                hasFoundSomething = true;
+                                AssignmentResult result = new AssignmentResult()
+                                {
+                                    i = i,
+                                    j = j,
+                                    color = false
+                                };
+
+
+                                Assign(result, false);
+                            }
+                        }
+                    }
+
+                }
+            }
+            while (hasFoundSomething);
+
+            return assignments;
+        }
+
 
         /// <summary>
         /// Solve the puzzle
@@ -408,10 +446,12 @@ namespace Unruly
                 return false;
             }
 
+            List<AssignmentResult> unitResults = UnitPropagation();
 
             //choose variable to assign
-            AssignmentResult assignmentResult = GetNextAssignment();
+            AssignmentResult assignmentResult = assignmentStragey.GetNextAssignment(this);
 
+            //Thread.Sleep(1000);
 
             if (assignmentResult == null)
             {
@@ -419,17 +459,16 @@ namespace Unruly
                 return ContainsRuleViolation();
             }
 
+            Assign(assignmentResult, assignmentResult.color);
 
-
-            bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
-
-            Assign(assignmentResult, true);
             if (!Solve())
             {
-                Assign(assignmentResult, false);
+                unitResults.ForEach(result => UnAssign(result));
+                Assign(assignmentResult, !assignmentResult.color);
                 if (!Solve())
                 {
-                    Assign(assignmentResult, valueBefore);
+                    unitResults.ForEach(result => UnAssign(result));
+                    UnAssign(assignmentResult);
                     return false;
                 }
                 else
@@ -453,7 +492,7 @@ namespace Unruly
         public Nullable<Boolean>[,] OpenFile(string path)
         {
             Random random = new Random();
-            int randomNumber = random.Next(1, 3);
+            int randomNumber = random.Next(1, 1);
             Console.WriteLine("random " + randomNumber);
             String[] puzzle = new String[]
             {
@@ -490,6 +529,7 @@ namespace Unruly
                     else
                     {
                         resultArray[i, j] = null;
+                        unassignedPositions.Add(new Tuple<int, int>(i, j));
                     }
 
                 }

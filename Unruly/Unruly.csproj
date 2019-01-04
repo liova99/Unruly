@@ -55,6 +55,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AssignmentResult.cs" />
+    <Compile Include="RandomAssignmentStrategy.cs" />
+    <Compile Include="SimpleAssignmentStrategy.cs" />
+    <Compile Include="SmartAssignmentStrategy.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -64,6 +68,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CreateGame.cs" />
+    <Compile Include="IAssignmentStragey.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
