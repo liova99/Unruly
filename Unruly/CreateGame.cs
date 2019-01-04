@@ -35,6 +35,10 @@ namespace Unruly
         //TEST/ DEBUG
         private Canvas myCanvas;
 
+        public AssignmentResult lastassignmentResult;
+
+
+
         public CreateGame(Canvas myCanvas)
         {
             this.myCanvas = myCanvas;
@@ -63,9 +67,9 @@ namespace Unruly
 
 
 
+                Solve();
 
-
-                if (Solve())
+                if (Solved())
                 {
                     CreateGrid(maxColumns, myCanvas);
                 }
@@ -314,7 +318,7 @@ namespace Unruly
                 for (int j = 1; j < maxColumns - 1; j++)
                 {
 
-                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j]))
+                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j] && _myArray[i, j] != null)) // && x != null
                     {
 
                         return false;
@@ -337,7 +341,7 @@ namespace Unruly
                 for (int i = 1; i < maxColumns - 1; i++)
                 {
 
-                    if (new[] { _myArray[i - 1, j], _myArray[i + 1, j] }.All(x => x == _myArray[i, j]))
+                    if (new[] { _myArray[i - 1, j], _myArray[i + 1, j] }.All(x => x == _myArray[i, j] && _myArray[i, j] != null))
                     {
                         return false;
                     }
@@ -382,75 +386,112 @@ namespace Unruly
         /// <returns></returns>
         public bool Solve()
         {
-            //optimization: some rule violations can be detected before everything is complete
 
+            AssignmentResult assignmentResult = GetNextAssignment();
+            //AssignmentResult lastassignmentResult; // = new AssignmentResult { i = assignmentResult.i, j = assignmentResult.j };
+
+
+
+
+            
+            if (assignmentResult != null)
+            {
+                _myArray[assignmentResult.i, assignmentResult.j] = true;
+                if (!ContainsRuleViolation())
+                {
+                    _myArray[assignmentResult.i, assignmentResult.j] = false;
+
+                    if (!ContainsRuleViolation())
+                    {
+                        //_myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+
+                        //try
+                        //{
+                        //    _myArray[lastassignmentResult.i, lastassignmentResult.j] = valueBefore;
+                        //}
+                        //catch
+                        //{
+                        //    Console.WriteLine("lastassignmentResult not Assigned jet");
+                        //}
+
+
+                        return RealySolve();
+
+                    }
+                }
+
+            }
+
+            lastassignmentResult = assignmentResult;
+            try
+            {
+                valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+            }
+            catch
+            {
+                Console.WriteLine("valueBefore = Null");
+            }
+            if (assignmentResult == null)
+            {
+                return  true;
+            }
+            else
+            {
+                
+                Solve();
+            }
+
+
+            return true;
+
+
+
+
+
+        }
+
+        public bool RealySolve()
+        {
+            //optimization: some rule violations can be detected before everything is complete
 
 
             //choose variable to assign
             AssignmentResult assignmentResult = GetNextAssignment();
 
 
-
-
-
-
-
-
-
-            //if (assignmentResult == null)
-            //{
-            //   
-            //    return ContainsRuleViolation();
-            //}
-
-
-
-
-
-
-            valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
-
-            if (!Solve() && assignmentResult != null)
+            if (assignmentResult == null)
             {
-               
-                _myArray[assignmentResult.i, assignmentResult.j] = true;
+               return ContainsRuleViolation();
+            }
 
-                if (!ContainsRuleViolation())
+            bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+
+            _myArray[assignmentResult.i, assignmentResult.j] = true;
+
+            //assign with white
+
+            if (!RealySolve())
+            {
+                //unassign value
+                //assign black
+
+                _myArray[assignmentResult.i, assignmentResult.j] = false;
+
+                if (!RealySolve())
                 {
-                    _myArray[assignmentResult.i, assignmentResult.j] = false;
-                    
+                    _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    return false;
                 }
                 else
                 {
                     return true;
                 }
-
-                if (!Solve())
-                {
-                    if (!ContainsRuleViolation())
-                    {
-                        _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-
             }
             else
             {
                 return true;
             }
-           
-            
         }
-
 
         public Nullable<Boolean>[,] OpenFile(string path)
         {
