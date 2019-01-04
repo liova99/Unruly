@@ -314,7 +314,7 @@ namespace Unruly
                 for (int j = 1; j < maxColumns - 1; j++)
                 {
 
-                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j] && _myArray[i, j] != null ))
+                    if (new[] { _myArray[i, j - 1], _myArray[i, j + 1] }.All(x => x == _myArray[i, j] && _myArray[i, j] != null))
                     {
 
                         return false;
@@ -393,20 +393,13 @@ namespace Unruly
             if (assignmentResult == null)
             {
 
-                return true; // ContainsRuleViolation();
+                return ContainsRuleViolation();
             }
 
-            try
-            {
 
-                bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
-                _myArray[assignmentResult.i, assignmentResult.j] = true;
-            }
-            catch
-            {
-                Console.WriteLine("nothing to say");
-                return true;
-            }
+            bool? valueBefore = _myArray[assignmentResult.i, assignmentResult.j];
+            _myArray[assignmentResult.i, assignmentResult.j] = true;
+
             if (!ContainsRuleViolation())
             {
                 _myArray[assignmentResult.i, assignmentResult.j] = false;
@@ -414,16 +407,25 @@ namespace Unruly
                 if (!ContainsRuleViolation())
                 {
                     _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
+                    return false;
                 }
-               
+                else
+                {
+                    return Solve();
+                }
 
+
+            }
+            else
+            {
+                return Solve();
             }
 
 
 
             if (!Solve())
             {
-                
+
                 _myArray[assignmentResult.i, assignmentResult.j] = valueBefore;
 
                 if (!Solve())
