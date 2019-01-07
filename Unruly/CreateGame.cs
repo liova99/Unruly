@@ -32,7 +32,7 @@ namespace Unruly
         private Brush _white = System.Windows.Media.Brushes.White;
         private Brush _gray = System.Windows.Media.Brushes.Gray;
 
-        //TEST/ DEBUG
+        
         private Canvas myCanvas;
 
         private IAssignmentStragey assignmentStragey = new SmartAssignmentStrategy();
@@ -210,16 +210,19 @@ namespace Unruly
         public void InitFile(string size)
         {
             Random random = new Random();
-            int randomNumber = random.Next(1, 2);
+            int randomNumber = random.Next(1, 3);
 
-            //int randomNumber = 3;
-
-            //_myArray = OpenFile($@"Resources\Puzzle\small_{randomNumber}.txt");
-            //_initalArray = OpenFile($@"Resources\Puzzle\small_{randomNumber}.txt");
-
-            _myArray = OpenFile($@"C:\Temp\{size}_{randomNumber}.txt");
-            _initalArray = OpenFile($@"C:\Temp\{size}_{randomNumber}.txt");
-
+            // if there is only one version open: {size}_1.txt"
+            try
+            {
+                _myArray = OpenFile($@"C:\Temp\{size}_{randomNumber}.txt");
+                _initalArray = OpenFile($@"C:\Temp\{size}_{randomNumber}.txt");
+            }
+            catch
+            {
+                _myArray = OpenFile($@"C:\Temp\{size}_1.txt");
+                _initalArray = OpenFile($@"C:\Temp\{size}_1.txt");
+            }
             rectangles = new Rectangle[maxRows, maxColumns];
 
         }
@@ -476,15 +479,11 @@ namespace Unruly
                     return Solve();
                 }
 
-
             }
             else
             {
                 return Solve();
             }
-
-
-
 
         }
 
@@ -492,8 +491,10 @@ namespace Unruly
         public Nullable<Boolean>[,] OpenFile(string path)
         {
             Random random = new Random();
-            int randomNumber = random.Next(1, 1);
+            int randomNumber = random.Next(1,3);
             Console.WriteLine("random " + randomNumber);
+
+            // todo, delete this:
             String[] puzzle = new String[]
             {
                 "small_1.txt","small_2.txt",
