@@ -66,6 +66,61 @@ try
 
 
 
+### recursion
+
+```c#
+        public bool Solve()
+        {
+            //optimization: some rule violations can be detected before everything is complete
+
+            if (!ContainsRuleViolation())
+            {
+                return false;
+            }
+
+            List<AssignmentResult> unitResults = UnitPropagation();
+
+            //choose variable to assign
+            AssignmentResult assignmentResult = assignmentStragey.GetNextAssignment(this);
+
+            //Thread.Sleep(1000);
+
+            if (assignmentResult == null)
+            {
+
+                return ContainsRuleViolation();
+            }
+
+            Assign(assignmentResult, assignmentResult.color);
+
+            if (!Solve())
+            {
+                unitResults.ForEach(result => UnAssign(result));
+                Assign(assignmentResult, !assignmentResult.color);
+                if (!Solve())
+                {
+                    unitResults.ForEach(result => UnAssign(result));
+                    UnAssign(assignmentResult);
+                    return false;
+                }
+                else
+                {
+                    return Solve();
+                }
+
+
+            }
+            else
+            {
+                return Solve();
+            }
+
+
+
+
+        }
+```
+
 
 
 
