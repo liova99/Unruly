@@ -32,10 +32,15 @@ namespace Unruly
         private Brush _white = System.Windows.Media.Brushes.White;
         private Brush _gray = System.Windows.Media.Brushes.Gray;
 
-        
+
         private Canvas myCanvas;
 
         private IAssignmentStragey assignmentStragey = new SmartAssignmentStrategy();
+
+        // check speed
+        private int _backtracks = 0;
+
+
         public CreateGame(Canvas myCanvas)
         {
             this.myCanvas = myCanvas;
@@ -72,7 +77,9 @@ namespace Unruly
 
                     Stopwatch stopwatch = new Stopwatch();
                     stopwatch.Start();
-                    result = Solve();
+                    PreSolveColumnColorAssign();
+                    PreSolveRowsColorAssign();
+                    result =  Solve();
                     stopwatch.Stop();
 
                     Console.WriteLine(stopwatch.Elapsed);
@@ -83,6 +90,8 @@ namespace Unruly
                         {
 
                             CreateGrid(maxRows, myCanvas);
+                            MessageBox.Show("Backtracks: " + _backtracks);
+                            _backtracks = 0;
                         });
                     }
                     else
@@ -207,25 +216,7 @@ namespace Unruly
             }
         }
 
-        public void InitFile(string size)
-        {
-            Random random = new Random();
-            int randomNumber = random.Next(1, 3);
 
-            // if there is only one version open: {size}_1.txt"
-            try
-            {
-                _myArray = OpenFile($@"C:\Temp\{size}_{randomNumber}.txt");
-                _initalArray = OpenFile($@"C:\Temp\{size}_{randomNumber}.txt");
-            }
-            catch
-            {
-                _myArray = OpenFile($@"C:\Temp\{size}_1.txt");
-                _initalArray = OpenFile($@"C:\Temp\{size}_1.txt");
-            }
-            rectangles = new Rectangle[maxRows, maxColumns];
-
-        }
 
 
 
@@ -435,6 +426,160 @@ namespace Unruly
             return assignments;
         }
 
+        /// <summary>
+        /// if there is maxRows/2 of one color fill the
+        /// other rows with the other color
+        /// ex. in one 6x6 puzzle, if there is 3 black in one row
+        /// the other 3 must be white
+        /// </summary>
+        public void PreSolveRowsColorAssign()
+        {
+            _backtracks++;
+            List<AssignmentResult> unitResults = UnitPropagation();
+
+            for (int i = 0; i < maxColumns; i++)
+            {
+                int white = 0;
+                int black = 0;
+
+                for (int j = 0; j < maxRows; j++)
+                {
+                    // if there 2 the same color, fill the next with the other color 
+                    if (j > 1 && j < 4 && _myArray[i, j] == null)
+                    {
+                        if (_myArray[i, j - 1] == _myArray[i, j - 2] && _myArray[i, j - 1] != null)
+                        {
+
+                            _myArray[i, j] = _myArray[i, j - 1] == true ? false : true;
+                            AssignmentResult assignmentResult = new AssignmentResult() { i = i, j = j, color = (bool)_myArray[i, j] };
+                            Assign(assignmentResult, (bool)_myArray[i, j]);
+                            PreSolveRowsColorAssign();
+                        }
+                        else if (_myArray[i, j + 1] == _myArray[i, j + 2] && _myArray[i, j + 1] != null)
+                        {
+                            _myArray[i, j] = _myArray[i, j + 1] == true ? false : true;
+                            AssignmentResult assignmentResult = new AssignmentResult() { i = i, j = j, color = (bool)_myArray[i, j] };
+                            Assign(assignmentResult, (bool)_myArray[i, j]);
+                            PreSolveRowsColorAssign();
+                        }
+                    }
+
+                    if (_myArray[i, j] == true)
+                    {
+                        white++;
+                    }
+                    else if (_myArray[i, j] == false)
+                    {
+                        black++;
+                    }
+
+                    if (black == maxRows / 2)
+                    {
+                        for (int y = 0; y < maxRows; y++)
+                        {
+                            if (_myArray[i, y] == null)
+                            {
+                                _myArray[i, y] = true;
+                                AssignmentResult assignmentResult = new AssignmentResult() { i = i, j = y, color = true };
+                                Assign(assignmentResult, true);
+                                PreSolveRowsColorAssign();
+                            }
+                        }
+                    }
+                    else if (white == maxRows / 2)
+                    {
+                        for (int y = 0; y < maxRows; y++)
+                        {
+                            if (_myArray[i, y] == null)
+                            {
+                                _myArray[i, y] = false;
+                                AssignmentResult assignmentResult = new AssignmentResult() { i = i, j = y, color = false };
+                                Assign(assignmentResult, false);
+                                PreSolveRowsColorAssign();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// if there is maxcolums/2 of one color fill the
+        /// others with the other color
+        /// ex. in one 6x6 puzzle, if there is 3 black in one column
+        /// the other 3 must  be white
+        /// </summary>
+        public void PreSolveColumnColorAssign()
+        {
+            _backtracks++;
+            List<AssignmentResult> unitResults = UnitPropagation();
+
+            for (int j = 0; j < maxRows; j++)
+            {
+                int white = 0;
+                int black = 0;
+
+                for (int i = 0; i < maxColumns; i++)
+                {
+                    // if there 2 the same color, fill the next with the other color 
+                    if (i > 1 && i < maxColumns - 2 && _myArray[i, j] == null)
+                    {
+                        if (_myArray[i - 1, j] == _myArray[i - 2, j] && _myArray[i - 1, j] != null)
+                        {
+
+                            _myArray[i, j] = _myArray[i - 1, j] == true ? false : true;
+                            AssignmentResult assignmentResult = new AssignmentResult() { i = i, j = j, color = (bool)_myArray[i, j] };
+                            Assign(assignmentResult, (bool)_myArray[i, j]);
+                            PreSolveColumnColorAssign();
+                        }
+                        else if (_myArray[i + 1, j] == _myArray[i + 2, j] && _myArray[i + 1, j] != null)
+                        {
+                            _myArray[i, j] = _myArray[i + 1, j] == true ? false : true;
+                            AssignmentResult assignmentResult = new AssignmentResult() { i = i, j = j, color = (bool)_myArray[i, j] };
+                            Assign(assignmentResult, (bool)_myArray[i, j]);
+                            PreSolveColumnColorAssign();
+                        }
+                    }
+
+                    if (_myArray[i, j] == true)
+                    {
+                        white++;
+                    }
+                    else if (_myArray[i, j] == false)
+                    {
+                        black++;
+                    }
+
+                    if (black == maxColumns / 2)
+                    {
+                        for (int y = 0; y < maxColumns; y++)
+                        {
+                            if (_myArray[y, j] == null)
+                            {
+                                _myArray[y, j] = true;
+                                AssignmentResult assignmentResult = new AssignmentResult() { i = y, j = j, color = true };
+                                Assign(assignmentResult, true);
+                                PreSolveColumnColorAssign();
+                            }
+                        }
+                    }
+                    else if (white == maxColumns / 2)
+                    {
+                        for (int y = 0; y < maxColumns; y++)
+                        {
+                            if (_myArray[y, j] == null)
+                            {
+                                _myArray[y, j] = false;
+                                AssignmentResult assignmentResult = new AssignmentResult() { i = y, j = j, color = false };
+                                Assign(assignmentResult, false);
+                                PreSolveColumnColorAssign();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
         /// <summary>
         /// Solve the puzzle
@@ -443,6 +588,8 @@ namespace Unruly
         public bool Solve()
         {
             //optimization: some rule violations can be detected before everything is complete
+
+            _backtracks++;
 
             if (!ContainsRuleViolation())
             {
@@ -487,20 +634,40 @@ namespace Unruly
 
         }
 
+        public void InitFile(string size)
+        {
+            Random random = new Random();
+            int randomNumber = random.Next(1, 3);
+
+            // if there is only one version open: {size}_1.txt"
+            try
+            {
+                _myArray = OpenFile($@"C:\Temp\{size}_{randomNumber}.txt");
+                _initalArray = _myArray.Clone() as Nullable<Boolean>[,];
+            }
+            catch
+            {
+                _myArray = OpenFile($@"C:\Temp\{size}_1.txt");
+                _initalArray = _myArray.Clone() as Nullable<Boolean>[,];
+            }
+            rectangles = new Rectangle[maxRows, maxColumns];
+
+        }
 
         public Nullable<Boolean>[,] OpenFile(string path)
         {
-            Random random = new Random();
-            int randomNumber = random.Next(1,3);
-            Console.WriteLine("random " + randomNumber);
+            //Random random = new Random();
+            //int randomNumber = random.Next(1, 3);
+            //Console.WriteLine("random " + randomNumber);
 
-            // todo, delete this:
-            String[] puzzle = new String[]
-            {
-                "small_1.txt","small_2.txt",
-            };
+            //// todo, delete this:
+            //String[] puzzle = new String[]
+            //{
+            //    "small_1.txt","small_2.txt",
+            //};
 
-            //$@"Resources\Puzzle\small_{randomNumber}.txt"
+            ////$@"Resources\Puzzle\small_{randomNumber}.txt"
+            ///
             string[] puzzleLines = File.ReadAllLines(path);
 
             string[] puzzleFirstLineSplitted = puzzleLines[0].Split(' ');

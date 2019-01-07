@@ -18,7 +18,8 @@ namespace Unruly
                     {
                         if (game._myArray[position.Item1, position.Item2 - 2] == game._myArray[position.Item1, position.Item2 - 1])
                         {
-                            return new AssignmentResult() { i = position.Item1, j = position.Item2, color = game._myArray[position.Item1, position.Item2 - 1] == false };
+                           
+                           // return new AssignmentResult() { i = position.Item1, j = position.Item2, color = game._myArray[position.Item1, position.Item2 - 1] == false };
                         }
 
                     }
@@ -30,7 +31,8 @@ namespace Unruly
                     {
                         if (game._myArray[position.Item1 - 2, position.Item2] == game._myArray[position.Item1 - 1, position.Item2])
                         {
-                            return new AssignmentResult() { i = position.Item1, j = position.Item2, color = game._myArray[position.Item1 - 1, position.Item2] == false };
+                            return new AssignmentResult() { i = position.Item1, j = position.Item2, color = game._myArray[position.Item1 -1, position.Item2] == true ? false : true };
+                            //return new AssignmentResult() { i = position.Item1, j = position.Item2, color = game._myArray[position.Item1 - 1, position.Item2] == false };
                         }
 
                     }

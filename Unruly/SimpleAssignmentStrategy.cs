@@ -16,6 +16,7 @@ namespace Unruly
                 return null;
             }
 
+
             return new AssignmentResult() { i = position.Item1, j = position.Item2, color = true };
 
         }
