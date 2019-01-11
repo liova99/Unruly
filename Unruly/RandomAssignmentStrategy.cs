@@ -10,7 +10,6 @@ namespace Unruly
     {
         Random r = new Random();
 
-
         public AssignmentResult GetNextAssignment(CreateGame game)
         {
             if (!game.unassignedPositions.Any())
@@ -20,12 +19,14 @@ namespace Unruly
 
             Tuple<int, int> selectedValue = game.unassignedPositions.ElementAt(r.Next(game.unassignedPositions.Count));
 
-
+            // try with random color too
+            Console.WriteLine("Random Num :" + (r.Next(100) <= 50 ? true : false));
             return new AssignmentResult()
             {
-                i = selectedValue.Item1,
-                j = selectedValue.Item2,
-                color = true
+               
+            i = selectedValue.Item1,
+            j = selectedValue.Item2,
+            color = r.Next(100) <= 50 ? true : false
             };
         }
     }

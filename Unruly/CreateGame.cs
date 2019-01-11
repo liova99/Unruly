@@ -35,7 +35,7 @@ namespace Unruly
 
         private Canvas myCanvas;
 
-        private IAssignmentStragey assignmentStragey = new SimpleAssignmentStrategy();
+        private IAssignmentStragey assignmentStragey = new RandomAssignmentStrategy();
 
         // check speed
         private int _backtracks = 0;
@@ -78,7 +78,7 @@ namespace Unruly
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
                 RunPreSolve();
-                result = true; //  Solve(); //  true; // 
+                result = true; //Solve(); //    true; // 
                 stopwatch.Stop();
 
                 Console.WriteLine(stopwatch.Elapsed);
@@ -353,6 +353,7 @@ namespace Unruly
             {
                 int white = 0;
                 int black = 0;
+
 
                 for (int i = 0; i < maxColumns; i++)
                 {

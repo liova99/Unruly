@@ -37,7 +37,6 @@ namespace Unruly
 
                     }
                 }
-
             }
 
             Tuple<int, int> rposition = game.unassignedPositions.FirstOrDefault();
